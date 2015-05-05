@@ -6,7 +6,7 @@ except ImportError:
     from django.utils.text import camel_case_to_spaces as get_verbose_name
 
 from django.db import models
-from django.utils.datastructures import SortedDict
+from collections import OrderedDict
 
 class Options(object):
     def __init__(self, meta, help_text=None):
@@ -22,7 +22,7 @@ class Options(object):
         self._set_seo_models(meta.pop('seo_models', []))
         self.bulk_help_text = help_text
         self.original_meta = meta
-        self.models = SortedDict()
+        self.models = OrderedDict()
         self.name = None
         self.elements = None
         self.metadata = None
