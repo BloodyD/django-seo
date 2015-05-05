@@ -2,7 +2,9 @@
 
 from django import forms
 from django.contrib import admin
-from django.contrib.contenttypes import generic
+# from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
+from django.contrib.contenttypes.admin import GenericStackedInline
 from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import smart_unicode
 from django.forms.models import fields_for_model
@@ -80,7 +82,7 @@ def register_seo_admin(admin_site, metadata_class):
 
 def _register_admin(admin_site, model, admin_class):
     """ Register model in the admin, ignoring any previously registered models.
-        Alternatively it could be used in the future to replace a previously 
+        Alternatively it could be used in the future to replace a previously
         registered model.
     """
     try:
@@ -89,7 +91,7 @@ def _register_admin(admin_site, model, admin_class):
         pass
 
 
-class MetadataFormset(generic.BaseGenericInlineFormSet):
+class MetadataFormset(BaseGenericInlineFormSet):
     def _construct_form(self, i, **kwargs):
         """ Override the method to change the form attribute empty_permitted """
         form = super(MetadataFormset, self)._construct_form(i, **kwargs)
@@ -110,14 +112,14 @@ class MetadataFormset(generic.BaseGenericInlineFormSet):
 
 def get_inline(metadata_class):
     attrs = {
-        'max_num': 1, 
-        'extra': 1, 
-        'model': metadata_class._meta.get_model('modelinstance'), 
+        'max_num': 1,
+        'extra': 1,
+        'model': metadata_class._meta.get_model('modelinstance'),
         'ct_field': "_content_type",
         'ct_fk_field': "_object_id",
         'formset': MetadataFormset,
         }
-    return type('MetadataInline', (generic.GenericStackedInline,), attrs)
+    return type('MetadataInline', (GenericStackedInline,), attrs)
 
 
 def get_model_form(metadata_class):
@@ -185,8 +187,8 @@ def get_view_form(metadata_class):
 
 
 def core_choice_fields(metadata_class):
-    """ If the 'optional' core fields (_site and _language) are required, 
-        list them here. 
+    """ If the 'optional' core fields (_site and _language) are required,
+        list them here.
     """
     fields = []
     if metadata_class._meta.use_sites:
@@ -209,7 +211,7 @@ def _monkey_inline(model, admin_class_instance, metadata_class, inline_class, ad
         admin_class_instance.inline_instances.append(inline_instance)
 
 def _with_inline(func, admin_site, metadata_class, inline_class):
-    """ Decorator for register function that adds an appropriate inline."""   
+    """ Decorator for register function that adds an appropriate inline."""
 
     def register(model_or_iterable, admin_class=None, **options):
         # Call the (bound) function we were given.
@@ -221,7 +223,7 @@ def _with_inline(func, admin_site, metadata_class, inline_class):
 
 def auto_register_inlines(admin_site, metadata_class):
     """ This is a questionable function that automatically adds our metadata
-        inline to all relevant models in the site. 
+        inline to all relevant models in the site.
     """
     inline_class = get_inline(metadata_class)
 
